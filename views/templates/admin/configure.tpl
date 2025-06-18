@@ -24,25 +24,6 @@
 *}
 
 <div class="panel">
-	<h3><i class="icon icon-credit-card"></i> {l s='Carrier Postcode Restriction' mod='carrierpostcoderestriction'}</h3>
-	<p>
-		<strong>{l s='Here is my new generic module!' mod='carrierpostcoderestriction'}</strong><br />
-		{l s='Thanks to PrestaShop, now I have a great module.' mod='carrierpostcoderestriction'}<br />
-		{l s='I can configure it using the following configuration form.' mod='carrierpostcoderestriction'}
-	</p>
-	<br />
-	<p>
-		{l s='This module will boost your sales!' mod='carrierpostcoderestriction'}
-	</p>
-</div>
-
-<div class="panel">
-	<h3><i class="icon icon-tags"></i> {l s='Documentation' mod='carrierpostcoderestriction'}</h3>
-	<p>
-		&raquo; {l s='You can get a PDF documentation to configure this module' mod='carrierpostcoderestriction'} :
-		<ul>
-			<li><a href="#" target="_blank">{l s='English' mod='carrierpostcoderestriction'}</a></li>
-			<li><a href="#" target="_blank">{l s='French' mod='carrierpostcoderestriction'}</a></li>
-		</ul>
-	</p>
+	<h3><i class="icon icon-shopping-cart"></i> {l s='Carrier Postcode Restriction' mod='carrierpostcoderestriction'}</h3>
+	<p>{l s='This module allows you to restrict delivery based on postcode.' mod='carrierpostcoderestriction'}</p>
 </div>

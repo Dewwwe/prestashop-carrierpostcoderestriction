@@ -59,22 +59,27 @@ class Carrierpostcoderestriction extends Module
      */
     public function install()
     {
-        Configuration::updateValue('CARRIERPOSTCODERESTRICTION_LIVE_MODE', false);
+        // Configuration::updateValue('CARRIERPOSTCODERESTRICTION_LIVE_MODE', false);
 
         include(dirname(__FILE__).'/sql/install.php');
 
-        return parent::install() &&
-            $this->registerHook('header') &&
-            $this->registerHook('displayBackOfficeHeader') &&
-            $this->registerHook('actionCarrierProcess') &&
-            $this->registerHook('actionCarrierUpdate') &&
-            $this->registerHook('displayBeforeCarrier') &&
-            $this->registerHook('displayCarrierExtraContent');
+        return parent::install()
+            // Add JS & CSS to front office
+            && $this->registerHook('header')
+            // Add JS @ CSS to back office
+            && $this->registerHook('displayBackOfficeHeader') 
+            // Filter the carrier options in the front office
+            && $this->registerHook('actionFilterDeliveryOptionList')
+            // Others let's see
+            && $this->registerHook('actionCarrierProcess')
+            && $this->registerHook('actionCarrierUpdate')
+            && $this->registerHook('displayBeforeCarrier')
+            && $this->registerHook('displayCarrierExtraContent');
     }
 
     public function uninstall()
     {
-        Configuration::deleteByName('CARRIERPOSTCODERESTRICTION_LIVE_MODE');
+        // Configuration::deleteByName('CARRIERPOSTCODERESTRICTION_LIVE_MODE');
 
         include(dirname(__FILE__).'/sql/uninstall.php');
 
@@ -86,6 +91,8 @@ class Carrierpostcoderestriction extends Module
      */
     public function getContent()
     {
+        $output = '';
+
         /**
          * If values have been submitted in the form, process.
          */
@@ -95,7 +102,7 @@ class Carrierpostcoderestriction extends Module
 
         $this->context->smarty->assign('module_dir', $this->_path);
 
-        $output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');
+        $output .= $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');
 
         return $output.$this->renderForm();
     }
@@ -120,12 +127,23 @@ class Carrierpostcoderestriction extends Module
         $helper->token = Tools::getAdminTokenLite('AdminModules');
 
         $helper->tpl_vars = array(
-            'fields_value' => $this->getConfigFormValues(), /* Add values for your inputs */
+            'fields_value' => $this->getConfigFormValues(),
             'languages' => $this->context->controller->getLanguages(),
             'id_language' => $this->context->language->id,
         );
 
-        return $helper->generateForm(array($this->getConfigForm()));
+        // Get the form structure
+        $form = $this->getConfigForm();
+        
+        // Process custom field types
+        foreach ($form['form']['input'] as &$input) {
+            if ($input['type'] == 'carrier_list') {
+                $input['html_content'] = $this->renderCarrierList($input['carriers']);
+                $input['type'] = 'html';
+            }
+        }
+
+        return $helper->generateForm(array($form));
     }
 
     /**
@@ -133,10 +151,14 @@ class Carrierpostcoderestriction extends Module
      */
     protected function getConfigForm()
     {
+        // Get all carriers
+    $carriers = Carrier::getCarriers($this->context->language->id, false, false, false, null, Carrier::ALL_CARRIERS);
+    
+
         return array(
             'form' => array(
                 'legend' => array(
-                'title' => $this->l('Settings'),
+                'title' => $this->l('Postcode Restriction Settings'),
                 'icon' => 'icon-cogs',
                 ),
                 'input' => array(
@@ -160,17 +182,23 @@ class Carrierpostcoderestriction extends Module
                         ),
                     ),
                     array(
-                        'col' => 3,
+                        'col' => 6,
                         'type' => 'text',
-                        'prefix' => '<i class="icon icon-envelope"></i>',
-                        'desc' => $this->l('Enter a valid email address'),
-                        'name' => 'CARRIERPOSTCODERESTRICTION_ACCOUNT_EMAIL',
-                        'label' => $this->l('Email'),
+                        'prefix' => '<i class="icon icon-map-marker"></i>',
+                        'desc' => $this->l('Enter two-digit numbers separated by commas (e.g., 75,77,78). Only customers with postcodes starting with these numbers will be allowed to select delivery.'),
+                        'name' => 'CARRIERPOSTCODERESTRICTION_ALLOWED_POSTCODES',
+                        'label' => $this->l('Allowed Postcode Prefixes'),
                     ),
                     array(
-                        'type' => 'password',
-                        'name' => 'CARRIERPOSTCODERESTRICTION_ACCOUNT_PASSWORD',
-                        'label' => $this->l('Password'),
+                        'type' => 'html',
+                        'name' => 'carrier_list_header',
+                        'html_content' => '<div class="alert alert-info">' . $this->l('Carriers with "Bypass restriction" enabled will always be shown to customers, regardless of their delivery address.') . '</div>',
+                    ),
+                    array(
+                        'type' => 'carrier_list',
+                        'label' => $this->l('Carrier Restrictions'),
+                        'name' => 'carrier_restrictions',
+                        'carriers' => $carriers,
                     ),
                 ),
                 'submit' => array(
@@ -181,15 +209,58 @@ class Carrierpostcoderestriction extends Module
     }
 
     /**
+     * Add a custom field type for carrier list
+     */
+    public function renderCarrierList($carriers)
+    {
+        $this->context->smarty->assign(array(
+            'carriers' => $carriers,
+            'bypass_values' => $this->getCarrierBypassValues(),
+        ));
+        
+        return $this->context->smarty->fetch($this->local_path . 'views/templates/admin/carrier_list.tpl');
+    }
+
+    /**
      * Set values for the inputs.
      */
     protected function getConfigFormValues()
     {
-        return array(
+        $values = array(
             'CARRIERPOSTCODERESTRICTION_LIVE_MODE' => Configuration::get('CARRIERPOSTCODERESTRICTION_LIVE_MODE', true),
-            'CARRIERPOSTCODERESTRICTION_ACCOUNT_EMAIL' => Configuration::get('CARRIERPOSTCODERESTRICTION_ACCOUNT_EMAIL', 'contact@prestashop.com'),
-            'CARRIERPOSTCODERESTRICTION_ACCOUNT_PASSWORD' => Configuration::get('CARRIERPOSTCODERESTRICTION_ACCOUNT_PASSWORD', null),
+            'CARRIERPOSTCODERESTRICTION_ALLOWED_POSTCODES' => Configuration::get('CARRIERPOSTCODERESTRICTION_ALLOWED_POSTCODES', null),
         );
+        
+        // Add carrier bypass values
+        $carrier_bypass_values = $this->getCarrierBypassValues();
+        foreach ($carrier_bypass_values as $id_carrier => $bypass) {
+            $values['CARRIER_BYPASS_' . $id_carrier] = $bypass;
+        }
+        
+        return $values;
+    }
+
+    /**
+     * Get carrier bypass values from db
+     */
+    protected function getCarrierBypassValues()
+    {
+        $bypass_values = array();
+        $carriers = Carrier::getCarriers($this->context->language->id, false, false, false, null, Carrier::ALL_CARRIERS);
+        
+        foreach ($carriers as $carrier) {
+            $id_carrier = (int)$carrier['id_carrier'];
+            
+            // Check if this carrier has a record in our table
+            $sql = 'SELECT bypass_restriction FROM `' . _DB_PREFIX_ . 'carrierpostcoderestriction` 
+                    WHERE carrier_id = ' . $id_carrier;
+            $result = Db::getInstance()->getValue($sql);
+            
+            // If no record exists, default to 0 (false)
+            $bypass_values[$id_carrier] = ($result !== false) ? (bool)$result : false;
+        }
+        
+        return $bypass_values;
     }
 
     /**
@@ -197,11 +268,49 @@ class Carrierpostcoderestriction extends Module
      */
     protected function postProcess()
     {
-        $form_values = $this->getConfigFormValues();
-
-        foreach (array_keys($form_values) as $key) {
-            Configuration::updateValue($key, Tools::getValue($key));
+        // Save general settings
+        Configuration::updateValue('CARRIERPOSTCODERESTRICTION_LIVE_MODE', (bool)Tools::getValue('CARRIERPOSTCODERESTRICTION_LIVE_MODE'));
+        Configuration::updateValue('CARRIERPOSTCODERESTRICTION_ALLOWED_POSTCODES', Tools::getValue('CARRIERPOSTCODERESTRICTION_ALLOWED_POSTCODES'));
+        
+        // Save carrier bypass settings
+        $carriers = Carrier::getCarriers($this->context->language->id, false, false, false, null, Carrier::ALL_CARRIERS);
+        
+        foreach ($carriers as $carrier) {
+            $id_carrier = (int)$carrier['id_carrier'];
+            $bypass_value = (bool)Tools::getValue('CARRIER_BYPASS_' . $id_carrier, false);
+            
+            // Check if record exists
+            $sql = 'SELECT id_carrierpostcoderestriction FROM `' . _DB_PREFIX_ . 'carrierpostcoderestriction` 
+                    WHERE carrier_id = ' . $id_carrier;
+            $id_record = Db::getInstance()->getValue($sql);
+            
+            $now = date('Y-m-d H:i:s');
+            
+            if ($id_record) {
+                // Update existing record
+                Db::getInstance()->update(
+                    'carrierpostcoderestriction',
+                    array(
+                        'bypass_restriction' => (int)$bypass_value,
+                        'date_upd' => $now
+                    ),
+                    'id_carrierpostcoderestriction = ' . (int)$id_record
+                );
+            } else {
+                // Insert new record
+                Db::getInstance()->insert(
+                    'carrierpostcoderestriction',
+                    array(
+                        'carrier_id' => $id_carrier,
+                        'bypass_restriction' => (int)$bypass_value,
+                        'date_add' => $now,
+                        'date_upd' => $now
+                    )
+                );
+            }
         }
+        
+        return $this->displayConfirmation($this->l('Settings updated successfully'));
     }
 
     /**
@@ -242,5 +351,90 @@ class Carrierpostcoderestriction extends Module
     public function hookDisplayCarrierExtraContent()
     {
         /* Place your code here. */
+    }
+
+    public function hookActionFilterDeliveryOptionList($params)
+    {
+        $deliveryOptionList = &$params['delivery_option_list'];
+        $carrierBypassValues = $this->getCarrierBypassValues();
+        $id_address_delivery = (int)$params['cart']->id_address_delivery;
+        $delivery_address_postcode = $this->getPostcodeByAddressId(($id_address_delivery));
+        
+        dump($carrierBypassValues);
+
+        // Loop through the delivery options (first level is address ID)
+        foreach ($deliveryOptionList as $addressId => &$addressOptions) {
+            // Loop through each carrier option for this address
+            foreach ($addressOptions as $carrierKey => &$carrierOption) {
+                // Debug: Check the structure of each carrier option
+                // dump("Address: $addressId, Carrier key: $carrierKey");
+                // dump($carrierOption);
+
+                // Check if this is a carrier we want to filter out
+                $shouldRemove = false;
+
+                // Loop through the carrier list in this option
+                foreach ($carrierOption['carrier_list'] as $carrierListId => $carrier) {
+                    // Debug: Check carrier details
+                    // dump("Carrier instance: ");
+                    // dump($carrier['instance']);
+
+                    $carrier_id = (int)$carrier['instance']->id;
+                    $bypassRestrictionForCarrier = isset($carrierBypassValues[$carrier_id]) ? $carrierBypassValues[$carrier_id] : false;
+                    // dump("Carrier ID: $carrier_id, Bypass restriction: " . ($bypassRestrictionForCarrier ? 'Yes' : 'No'));
+
+                    // If this carrier has bypass restriction enabled, skip filtering
+                    if ($bypassRestrictionForCarrier) {
+                        // dump("Bypassing restriction for carrier: " . $carrier['instance']->name);
+                        continue;
+                    }
+                    // Check if the delivery address postcode starts with any of the allowed prefixes
+                    $allowedPostcodes = Configuration::get('CARRIERPOSTCODERESTRICTION_ALLOWED_POSTCODES');
+                    $allowedPostcodesArray = array_map('trim', explode(',', $allowedPostcodes));
+                    $postcodeMatches = false;
+                    foreach ($allowedPostcodesArray as $prefix) {
+                        if (strpos($delivery_address_postcode, $prefix) === 0) {
+                            $postcodeMatches = true;
+                            break;
+                        }
+                    }
+                    // If postcode does not match any allowed prefix, mark for removal
+                    if (!$postcodeMatches) {
+                        // dump("Postcode '$delivery_address_postcode' does not match allowed prefixes: " . implode(', ', $allowedPostcodesArray));
+                        $shouldRemove = true;
+                        break;
+                    }
+
+                }
+
+                // Remove this carrier option if it doesn't match our criteria
+                if ($shouldRemove) {
+                    unset($addressOptions[$carrierKey]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Get postcode from an address ID
+     *
+     * @param int $id_address The address ID
+     * @return string|false The postcode or false if address not found
+     */
+    public function getPostcodeByAddressId($id_address)
+    {
+        // Validate address ID
+        $id_address = (int)$id_address;
+        if (!$id_address) {
+            return false;
+        }
+        
+        // Method 1: Using the Address object
+        $address = new Address($id_address);
+        if (Validate::isLoadedObject($address)) {
+            return $address->postcode;
+        }
+
+        return false;
     }
 }

@@ -27,7 +27,12 @@ $sql = array();
 
 $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'carrierpostcoderestriction` (
     `id_carrierpostcoderestriction` int(11) NOT NULL AUTO_INCREMENT,
-    PRIMARY KEY  (`id_carrierpostcoderestriction`)
+    `carrier_id` int(11) NOT NULL,
+    `bypass_restriction` tinyint(1) NOT NULL DEFAULT 0,
+    `date_add` datetime NOT NULL,
+    `date_upd` datetime NOT NULL,
+    PRIMARY KEY (`id_carrierpostcoderestriction`),
+    KEY `carrier_id` (`carrier_id`)
 ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
 foreach ($sql as $query) {

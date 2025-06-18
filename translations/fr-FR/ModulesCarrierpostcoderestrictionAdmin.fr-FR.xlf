@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="admin-lpdy" source-language="fr-FR" target-language="fr-FR" datatype="plaintext">
+    <body>
+      <trans-unit id="994bfc77089e3a5d5509c54f689503c5">
+        <source>Carrier Postcode Restriction</source>
+        <target>Restriction des options de transporteur par code postal</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="40b9bf6228b15cde0cdc3a9db3ee56b0">
+        <source>Restrict carrier options according to delivery address postcode</source>
+        <target>Restreindre les options du transporteur en fonction du code postal de l'adresse de livraison</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="41df74123a335076a15452ed2a85a1fb">
+        <source>Postcode Restriction</source>
+        <target>Restriction codes postaux</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8ca26dba358d015ece0bfdab4f68af24">
+        <source>Postcode Restriction Settings</source>
+        <target>Paramètres de restriction des codes postaux</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="83167ff434a5f39e8dc491deb650af78">
+        <source>Enter two-digit numbers separated by commas (e.g., 75,77,78). Only customers with postcodes starting with these numbers will be allowed to select delivery.</source>
+        <target>Saisissez des nombres à deux chiffres séparés par des virgules (par exemple, 75,77,78). Seuls les clients dont le code postal commence par ces chiffres seront autorisés à sélectionner la livraison.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d123f58ee9369dd6f0a3bdb6d2269c0d">
+        <source>Allowed Postcode Prefixes</source>
+        <target>Préfixes de codes postaux autorisés </target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5906f53ab5af06a2220ea4f9ba21d139">
+        <source>Carriers with "Bypass restriction" enabled will always be shown to customers, regardless of their delivery address.</source>
+        <target>Les transporteurs pour lesquels la fonction « Contourner la restriction » est activée seront toujours présentés aux clients, quelle que soit leur adresse de livraison.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f4d4aab4c7c0badb95f9b9fb78ae7fbc">
+        <source>Carrier Restrictions</source>
+        <target>Restrictions des transporteurs</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c9cc8cce247e49bae79f15173ce97354">
+        <source>Save</source>
+        <target>Enregistrer</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="462390017ab0938911d2d4e964c0cab7">
+        <source>Settings updated successfully</source>
+        <target>Mise à jour réussie des paramètres</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ee04be2cc5923f509f9fa65d19f6db4c">
+        <source>This module allows you to restrict delivery based on postcode.</source>
+        <target>Ce module vous permet de limiter les livraisons en fonction du code postal.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b718adec73e04ce3ec720dd11a06a308">
+        <source>ID</source>
+        <target>ID</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="914419aa32f04011357d3b604a86d7eb">
+        <source>Carrier</source>
+        <target>Transporteur</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b5a7adde1af5c87d7fd797b6245c2a39">
+        <source>Description</source>
+        <target>Description</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ec53a8c4f07baed5d8825072c89799be">
+        <source>Status</source>
+        <target>Statut</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6be9c49d955034c78ff51b853c19219b">
+        <source>Bypass Restriction</source>
+        <target>Contourner la restriction</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4d3d769b812b6faa6b76e1a8abaece2d">
+        <source>Active</source>
+        <target>Actif</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3cab03c00dbd11bc3569afa0748013f0">
+        <source>Inactive</source>
+        <target>Inactif</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="93cba07454f06a4a960172bbd6e2a435">
+        <source>Yes</source>
+        <target>Oui</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="bafd7322c6e97d25b6299b5d6fe8920b">
+        <source>No</source>
+        <target>Non</target>
+        <note>Line: </note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

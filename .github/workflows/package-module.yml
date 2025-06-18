@@ -1,0 +1,84 @@
+name: Package PrestaShop Module
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*' # Run workflow on version tags, e.g. v1.0.0
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Get repository name
+        id: repo-name
+        run: echo "REPO_NAME=$(basename $GITHUB_REPOSITORY)" >> $GITHUB_ENV
+        
+      - name: Extract module name from repository name
+        id: module-name
+        run: |
+          if [[ "${{ env.REPO_NAME }}" == prestashop-* ]]; then
+            # Remove 'prestashop-' prefix
+            MODULE_NAME="${REPO_NAME#prestashop-}"
+          else
+            # Use repository name as is
+            MODULE_NAME="${REPO_NAME}"
+          fi
+          echo "MODULE_NAME=${MODULE_NAME}" >> $GITHUB_ENV
+          echo "Module name: ${MODULE_NAME}"
+        
+      - name: Get version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        id: get-version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        
+      - name: Set version in module file
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          # Update version in main module file
+          sed -i "s/\$this->version = '[0-9.]*'/\$this->version = '${{ env.VERSION }}'/g" ${{ env.MODULE_NAME }}.php
+          # Update version in config.xml if it exists
+          if [ -f "config.xml" ]; then
+            sed -i "s/<version><!\[CDATA\[[0-9.]*\]\]><\/version>/<version><!\[CDATA\[${{ env.VERSION }}\]\]><\/version>/g" config.xml
+          fi
+      
+      - name: Remove development files
+        run: |
+          rm -rf .git .github .gitignore .DS_Store
+          find . -name "*.md" -type f -delete
+          find . -name ".DS_Store" -type f -delete
+          find . -name ".gitkeep" -type f -delete
+          
+      - name: Create module ZIP package
+        run: |
+          # Create the ZIP file in the parent directory
+          cd ..
+          zip -r ${{ env.MODULE_NAME }}.zip ${{ env.REPO_NAME }} -x "${{ env.REPO_NAME }}/.git*" -x "${{ env.REPO_NAME }}/.DS_Store"
+          # Move the ZIP back to the working directory
+          mv ${{ env.MODULE_NAME }}.zip ${{ env.REPO_NAME }}/
+          cd ${{ env.REPO_NAME }}
+          
+      - name: Upload module package as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.MODULE_NAME }}
+          path: ${{ env.MODULE_NAME }}.zip
+          
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ env.MODULE_NAME }}.zip
+          name: Release ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

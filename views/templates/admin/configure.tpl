@@ -24,6 +24,6 @@
 *}
 
 <div class="panel">
-	<h3><i class="icon icon-shopping-cart"></i> {l s='Carrier Postcode Restriction' mod='carrierpostcoderestriction'}</h3>
-	<p>{l s='This module allows you to restrict delivery based on postcode.' mod='carrierpostcoderestriction'}</p>
+	<h3><i class="icon icon-shopping-cart"></i> {l s='Carrier Postcode Restriction' d='Modules.Carrierpostcoderestriction.Admin'}</h3>
+	<p>{l s='This module allows you to restrict delivery based on postcode.' d='Modules.Carrierpostcoderestriction.Admin'}</p>
 </div>

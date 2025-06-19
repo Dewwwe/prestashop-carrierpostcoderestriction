@@ -50,7 +50,8 @@ class Carrierpostcoderestriction extends Module
         $this->displayName = $this->trans('Carrier Postcode Restriction', [], 'Modules.Carrierpostcoderestriction.Admin');
         $this->description = $this->trans('Restrict carrier options according to delivery address postcode', [], 'Modules.Carrierpostcoderestriction.Admin');
 
-        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
+        // 1.7.6 because using the new translation system
+        $this->ps_versions_compliancy = array('min' => '1.7.6', 'max' => _PS_VERSION_);
     }
 
     /**

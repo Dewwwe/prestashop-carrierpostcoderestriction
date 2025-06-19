@@ -212,12 +212,55 @@ class Carrierpostcoderestriction extends Module
                 ),
                 'input' => array(
                     array(
+                        'type' => 'html',
+                        'name' => 'form_layout_start',
+                        'html_content' => '<style>
+                        .form-wrapper .form-group label.control-label {
+                            text-align: left;
+                            float: none;
+                            width: 100%;
+                            padding: 0;
+                            margin-bottom: 10px;
+                        }
+                        .form-wrapper .form-group .col-lg-9,
+                        .form-wrapper .form-group .col-lg-8,
+                        .form-wrapper .form-group .col-lg-6 {
+                            width: 100%;
+                            float: none;
+                        }
+                        .form-wrapper .form-group {
+                            margin-bottom: 4px;
+                        }
+                        @media (min-width: 1200px) {
+                            .bootstrap .col-lg-offset-3 {
+                                margin-left: 0;
+                            }
+                        }
+                        h4 {
+                            margin-top: 16px;
+                        }
+                        label.control-label {
+                            display: none;
+                        }
+                    </style>',
+                    ),
+                    array(
+                        'type' => 'html',
+                        'name' => 'postcode_label',
+                        'html_content' => '<h4>' . $this->trans('Allowed Postcode Prefixes', [], 'Modules.Carrierpostcoderestriction.Admin') . '</h4>',
+                    ),
+                    array(
                         'col' => 6,
                         'type' => 'text',
                         'prefix' => '<i class="icon icon-map-marker"></i>',
                         'desc' => $this->trans('Enter two-digit numbers separated by commas (e.g., 75,77,78). Only customers with postcodes starting with these numbers will be allowed to select delivery.', [], 'Modules.Carrierpostcoderestriction.Admin'),
                         'name' => 'CARRIERPOSTCODERESTRICTION_ALLOWED_POSTCODES',
-                        'label' => $this->trans('Allowed Postcode Prefixes', [], 'Modules.Carrierpostcoderestriction.Admin'),
+                        'label' => '',
+                    ),
+                    array(
+                        'type' => 'html',
+                        'name' => 'carrier_list_label',
+                        'html_content' => '<h4>' . $this->trans('Carrier Restrictions', [], 'Modules.Carrierpostcoderestriction.Admin') . '</h4>',
                     ),
                     array(
                         'type' => 'html',
@@ -226,7 +269,7 @@ class Carrierpostcoderestriction extends Module
                     ),
                     array(
                         'type' => 'carrier_list',
-                        'label' => $this->trans('Carrier Restrictions', [], 'Modules.Carrierpostcoderestriction.Admin'),
+                        'label' => '',
                         'name' => 'carrier_restrictions',
                         'carriers' => $carriers,
                     ),

@@ -36,7 +36,7 @@ class Carrierpostcoderestriction extends Module
     {
         $this->name = 'carrierpostcoderestriction';
         $this->tab = 'administration';
-        $this->version = '1.0.2';
+        $this->version = '1.0.3';
         $this->author = 'dewwwe';
         $this->need_instance = 0;
 
@@ -147,7 +147,10 @@ class Carrierpostcoderestriction extends Module
          * If values have been submitted in the form, process.
          */
         if (((bool) Tools::isSubmit('submitCarrierpostcoderestrictionModule')) == true) {
-            $this->postProcess();
+            $processResult = $this->postProcess();
+            if ($processResult) {
+                $output .= $processResult;
+            }
         }
 
         $this->context->smarty->assign('module_dir', $this->_path);
@@ -347,7 +350,7 @@ class Carrierpostcoderestriction extends Module
 
     /**
      * Save form data.
-     * @return void Confirmation message
+     * @return string Confirmation message
      */
     public function postProcess()
     {
@@ -392,7 +395,8 @@ class Carrierpostcoderestriction extends Module
             }
         }
 
-        $this->context->controller->confirmations[] = $this->trans('Settings updated successfully', [], 'Modules.Carrierpostcoderestriction.Admin');
+        // $this->context->controller->confirmations[] = $this->trans('Settings updated successfully', [], 'Modules.Carrierpostcoderestriction.Admin');
+        return $this->displayConfirmation($this->trans('Settings updated successfully', [], 'Modules.Carrierpostcoderestriction.Admin'));
     }
 
     /**

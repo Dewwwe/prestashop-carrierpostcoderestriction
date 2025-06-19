@@ -36,7 +36,7 @@ class Carrierpostcoderestriction extends Module
     {
         $this->name = 'carrierpostcoderestriction';
         $this->tab = 'administration';
-        $this->version = '1.0.1';
+        $this->version = '1.0.2';
         $this->author = 'dewwwe';
         $this->need_instance = 0;
 
@@ -172,9 +172,18 @@ class Carrierpostcoderestriction extends Module
 
         $helper->identifier = $this->identifier;
         $helper->submit_action = 'submitCarrierpostcoderestrictionModule';
-        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false)
-            . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name;
-        $helper->token = Tools::getAdminTokenLite('AdminModules');
+
+        // Set the correct form action URL based on context
+        if (Tools::getValue('controller') == 'AdminCarrierPostcodeRestriction') {
+            // We're in the controller
+            $helper->currentIndex = $this->context->link->getAdminLink('AdminCarrierPostcodeRestriction');
+        } else {
+            // We're in the module configuration
+            $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false)
+                . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name;
+        }
+
+         $helper->token = Tools::getValue('token');
 
         $helper->tpl_vars = array(
             'fields_value' => $this->getConfigFormValues(),
@@ -338,7 +347,7 @@ class Carrierpostcoderestriction extends Module
 
     /**
      * Save form data.
-     * @return string Confirmation message
+     * @return void Confirmation message
      */
     public function postProcess()
     {
@@ -383,7 +392,7 @@ class Carrierpostcoderestriction extends Module
             }
         }
 
-        return $this->displayConfirmation($this->trans('Settings updated successfully', [], 'Modules.Carrierpostcoderestriction.Admin'));
+        $this->context->controller->confirmations[] = $this->trans('Settings updated successfully', [], 'Modules.Carrierpostcoderestriction.Admin');
     }
 
     /**

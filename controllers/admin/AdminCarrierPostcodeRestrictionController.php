@@ -41,6 +41,9 @@ class AdminCarrierPostcodeRestrictionController extends ModuleAdminController
             if ($processResult) {
                 $output .= $processResult;
             }
+
+            // Add confirmation message directly to controller
+            $this->confirmations[] = $this->module->getTranslator()->trans('Settings updated successfully', [], 'Modules.Carrierpostcoderestriction.Admin');
         }
 
         $this->context->smarty->assign('module_dir', $this->module->getLocalPath());

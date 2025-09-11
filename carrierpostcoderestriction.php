@@ -74,7 +74,7 @@ class Carrierpostcoderestriction extends Module
             // Others let's see
             // && $this->registerHook('actionCarrierProcess')
             // && $this->registerHook('actionCarrierUpdate')
-            // && $this->registerHook('displayBeforeCarrier')
+            && $this->registerHook('displayBeforeCarrier')
             // && $this->registerHook('displayCarrierExtraContent')
             // Install the quick access tab in the back office
             && $this->installTab();
@@ -272,6 +272,43 @@ class Carrierpostcoderestriction extends Module
                     ),
                     array(
                         'type' => 'html',
+                        'name' => 'restriction_message_label',
+                        'html_content' => '<h4>' . $this->trans('Restriction Message Links', [], 'Modules.Carrierpostcoderestriction.Admin') . '</h4>',
+                    ),
+                    array(
+                        'col' => 6,
+                        'type' => 'text',
+                        'prefix' => '<i class="icon icon-external-link"></i>',
+                        'desc' => $this->trans('Link text for the delivery zones page (e.g., "Where do we deliver?").', [], 'Modules.Carrierpostcoderestriction.Admin'),
+                        'name' => 'CARRIERPOSTCODERESTRICTION_DELIVERY_LINK_TEXT',
+                        'label' => $this->trans('Delivery Link Text', [], 'Modules.Carrierpostcoderestriction.Admin'),
+                    ),
+                    array(
+                        'col' => 6,
+                        'type' => 'text',
+                        'prefix' => '<i class="icon icon-link"></i>',
+                        'desc' => $this->trans('URL for the delivery zones page (e.g., "/delivery-zones").', [], 'Modules.Carrierpostcoderestriction.Admin'),
+                        'name' => 'CARRIERPOSTCODERESTRICTION_DELIVERY_LINK_URL',
+                        'label' => $this->trans('Delivery Link URL', [], 'Modules.Carrierpostcoderestriction.Admin'),
+                    ),
+                    array(
+                        'col' => 6,
+                        'type' => 'text',
+                        'prefix' => '<i class="icon icon-external-link"></i>',
+                        'desc' => $this->trans('Link text for the contact page (e.g., "Call Yann to discuss").', [], 'Modules.Carrierpostcoderestriction.Admin'),
+                        'name' => 'CARRIERPOSTCODERESTRICTION_CONTACT_LINK_TEXT',
+                        'label' => $this->trans('Contact Link Text', [], 'Modules.Carrierpostcoderestriction.Admin'),
+                    ),
+                    array(
+                        'col' => 6,
+                        'type' => 'text',
+                        'prefix' => '<i class="icon icon-link"></i>',
+                        'desc' => $this->trans('URL for the contact page (e.g., "/contact-us" or "tel:+33123456789").', [], 'Modules.Carrierpostcoderestriction.Admin'),
+                        'name' => 'CARRIERPOSTCODERESTRICTION_CONTACT_LINK_URL',
+                        'label' => $this->trans('Contact Link URL', [], 'Modules.Carrierpostcoderestriction.Admin'),
+                    ),
+                    array(
+                        'type' => 'html',
                         'name' => 'carrier_list_label',
                         'html_content' => '<h4>' . $this->trans('Carrier Restrictions', [], 'Modules.Carrierpostcoderestriction.Admin') . '</h4>',
                     ),
@@ -314,6 +351,10 @@ class Carrierpostcoderestriction extends Module
     {
         $values = array(
             'CARRIERPOSTCODERESTRICTION_ALLOWED_POSTCODES' => Configuration::get('CARRIERPOSTCODERESTRICTION_ALLOWED_POSTCODES', null),
+            'CARRIERPOSTCODERESTRICTION_DELIVERY_LINK_TEXT' => Configuration::get('CARRIERPOSTCODERESTRICTION_DELIVERY_LINK_TEXT', 'Where do we deliver?'),
+            'CARRIERPOSTCODERESTRICTION_DELIVERY_LINK_URL' => Configuration::get('CARRIERPOSTCODERESTRICTION_DELIVERY_LINK_URL', '#'),
+            'CARRIERPOSTCODERESTRICTION_CONTACT_LINK_TEXT' => Configuration::get('CARRIERPOSTCODERESTRICTION_CONTACT_LINK_TEXT', 'Call Yann to discuss'),
+            'CARRIERPOSTCODERESTRICTION_CONTACT_LINK_URL' => Configuration::get('CARRIERPOSTCODERESTRICTION_CONTACT_LINK_URL', '#'),
         );
 
         // Add carrier bypass values
@@ -356,6 +397,10 @@ class Carrierpostcoderestriction extends Module
     {
         // Save general settings
         Configuration::updateValue('CARRIERPOSTCODERESTRICTION_ALLOWED_POSTCODES', Tools::getValue('CARRIERPOSTCODERESTRICTION_ALLOWED_POSTCODES'));
+        Configuration::updateValue('CARRIERPOSTCODERESTRICTION_DELIVERY_LINK_TEXT', Tools::getValue('CARRIERPOSTCODERESTRICTION_DELIVERY_LINK_TEXT'));
+        Configuration::updateValue('CARRIERPOSTCODERESTRICTION_DELIVERY_LINK_URL', Tools::getValue('CARRIERPOSTCODERESTRICTION_DELIVERY_LINK_URL'));
+        Configuration::updateValue('CARRIERPOSTCODERESTRICTION_CONTACT_LINK_TEXT', Tools::getValue('CARRIERPOSTCODERESTRICTION_CONTACT_LINK_TEXT'));
+        Configuration::updateValue('CARRIERPOSTCODERESTRICTION_CONTACT_LINK_URL', Tools::getValue('CARRIERPOSTCODERESTRICTION_CONTACT_LINK_URL'));
 
         // Save carrier bypass settings
         $carriers = Carrier::getCarriers($this->context->language->id, false, false, false, null, Carrier::ALL_CARRIERS);
@@ -429,10 +474,38 @@ class Carrierpostcoderestriction extends Module
     //     /* Place your code here. */
     // }
 
-    // public function hookDisplayBeforeCarrier()
-    // {
-    //     /* Place your code here. */
-    // }
+    public function hookDisplayBeforeCarrier()
+    {
+        $cart = $this->context->cart;
+        if (!$cart || !$cart->id_address_delivery) {
+            return '';
+        }
+
+        $id_address_delivery = (int) $cart->id_address_delivery;
+        $delivery_address_postcode = $this->getPostcodeByAddressId($id_address_delivery);
+        
+        if (!$delivery_address_postcode) {
+            return '';
+        }
+
+        // Check if postcode restrictions should apply
+        $showMessage = $this->shouldShowPostcodeRestrictionMessage($delivery_address_postcode);
+        
+        if ($showMessage) {
+            $this->context->smarty->assign([
+                'showPostcodeRestrictionMessage' => true,
+                'postcode' => $delivery_address_postcode,
+                'deliveryLinkText' => Configuration::get('CARRIERPOSTCODERESTRICTION_DELIVERY_LINK_TEXT', 'Where do we deliver?'),
+                'deliveryLinkUrl' => Configuration::get('CARRIERPOSTCODERESTRICTION_DELIVERY_LINK_URL', '#'),
+                'contactLinkText' => Configuration::get('CARRIERPOSTCODERESTRICTION_CONTACT_LINK_TEXT', 'Call Yann to discuss'),
+                'contactLinkUrl' => Configuration::get('CARRIERPOSTCODERESTRICTION_CONTACT_LINK_URL', '#')
+            ]);
+            
+            return $this->display(__FILE__, 'displayBeforeCarrier.tpl');
+        }
+        
+        return '';
+    }
 
     // public function hookDisplayCarrierExtraContent()
     // {
@@ -444,53 +517,24 @@ class Carrierpostcoderestriction extends Module
         $deliveryOptionList = &$params['delivery_option_list'];
         $carrierBypassValues = $this->getCarrierBypassValues();
         $id_address_delivery = (int) $params['cart']->id_address_delivery;
-        $delivery_address_postcode = $this->getPostcodeByAddressId(($id_address_delivery));
-
-        // dump($carrierBypassValues);
+        $delivery_address_postcode = $this->getPostcodeByAddressId($id_address_delivery);
 
         // Loop through the delivery options (first level is address ID)
         foreach ($deliveryOptionList as $addressId => &$addressOptions) {
             // Loop through each carrier option for this address
             foreach ($addressOptions as $carrierKey => &$carrierOption) {
-                // Debug: Check the structure of each carrier option
-                // dump("Address: $addressId, Carrier key: $carrierKey");
-                // dump($carrierOption);
-
                 // Check if this is a carrier we want to filter out
                 $shouldRemove = false;
 
                 // Loop through the carrier list in this option
                 foreach ($carrierOption['carrier_list'] as $carrierListId => $carrier) {
-                    // Debug: Check carrier details
-                    // dump("Carrier instance: ");
-                    // dump($carrier['instance']);
-
                     $carrier_id = (int) $carrier['instance']->id;
-                    $bypassRestrictionForCarrier = isset($carrierBypassValues[$carrier_id]) ? $carrierBypassValues[$carrier_id] : false;
-                    // dump("Carrier ID: $carrier_id, Bypass restriction: " . ($bypassRestrictionForCarrier ? 'Yes' : 'No'));
-
-                    // If this carrier has bypass restriction enabled, skip filtering
-                    if ($bypassRestrictionForCarrier) {
-                        // dump("Bypassing restriction for carrier: " . $carrier['instance']->name);
-                        continue;
-                    }
-                    // Check if the delivery address postcode starts with any of the allowed prefixes
-                    $allowedPostcodes = Configuration::get('CARRIERPOSTCODERESTRICTION_ALLOWED_POSTCODES');
-                    $allowedPostcodesArray = array_map('trim', explode(',', $allowedPostcodes));
-                    $postcodeMatches = false;
-                    foreach ($allowedPostcodesArray as $prefix) {
-                        if (strpos($delivery_address_postcode, $prefix) === 0) {
-                            $postcodeMatches = true;
-                            break;
-                        }
-                    }
-                    // If postcode does not match any allowed prefix, mark for removal
-                    if (!$postcodeMatches) {
-                        // dump("Postcode '$delivery_address_postcode' does not match allowed prefixes: " . implode(', ', $allowedPostcodesArray));
+                    
+                    // Use the centralized method to check if carrier should be restricted
+                    if ($this->isCarrierRestrictedByPostcode($carrier_id, $delivery_address_postcode, $carrierBypassValues)) {
                         $shouldRemove = true;
                         break;
                     }
-
                 }
 
                 // Remove this carrier option if it doesn't match our criteria
@@ -522,5 +566,73 @@ class Carrierpostcoderestriction extends Module
         }
 
         return false;
+    }
+
+    /**
+     * Check if a carrier should be restricted based on postcode
+     *
+     * @param int $carrier_id The carrier ID
+     * @param string $postcode The delivery address postcode
+     * @param array $carrierBypassValues Array of carrier bypass values (optional, will be fetched if not provided)
+     * @return bool True if carrier should be restricted
+     */
+    public function isCarrierRestrictedByPostcode($carrier_id, $postcode, $carrierBypassValues = null)
+    {
+        if ($carrierBypassValues === null) {
+            $carrierBypassValues = $this->getCarrierBypassValues();
+        }
+
+        $bypassRestrictionForCarrier = isset($carrierBypassValues[$carrier_id]) ? $carrierBypassValues[$carrier_id] : false;
+
+        // If this carrier has bypass restriction enabled, it's never restricted
+        if ($bypassRestrictionForCarrier) {
+            return false;
+        }
+
+        // Check if the delivery address postcode starts with any of the allowed prefixes
+        $allowedPostcodes = Configuration::get('CARRIERPOSTCODERESTRICTION_ALLOWED_POSTCODES');
+        
+        if (empty($allowedPostcodes)) {
+            return false; // No restrictions configured
+        }
+
+        $allowedPostcodesArray = array_map('trim', explode(',', $allowedPostcodes));
+        
+        foreach ($allowedPostcodesArray as $prefix) {
+            if (!empty($prefix) && strpos($postcode, $prefix) === 0) {
+                return false; // Postcode matches, carrier is not restricted
+            }
+        }
+
+        return true; // Postcode doesn't match, carrier is restricted
+    }
+
+    /**
+     * Check if postcode restriction message should be shown
+     * This happens when postcode doesn't match allowed prefixes
+     * 
+     * @param string $postcode The delivery address postcode
+     * @return bool True if message should be shown
+     */
+    public function shouldShowPostcodeRestrictionMessage($postcode)
+    {
+        // First check if postcode restrictions are configured
+        $allowedPostcodes = Configuration::get('CARRIERPOSTCODERESTRICTION_ALLOWED_POSTCODES');
+        
+        if (empty($allowedPostcodes)) {
+            return false; // No restrictions configured
+        }
+
+        // Check if postcode matches allowed prefixes
+        $allowedPostcodesArray = array_map('trim', explode(',', $allowedPostcodes));
+        
+        foreach ($allowedPostcodesArray as $prefix) {
+            if (!empty($prefix) && strpos($postcode, $prefix) === 0) {
+                return false; // Postcode matches, no message needed
+            }
+        }
+
+        // Postcode doesn't match any allowed prefix, show message
+        return true;
     }
 }

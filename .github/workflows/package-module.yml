@@ -57,11 +57,17 @@ jobs:
           
       - name: Create module ZIP package
         run: |
-          # Create the ZIP file in the parent directory
+          # Create a temporary directory with the module name
           cd ..
-          zip -r ${{ env.MODULE_NAME }}.zip ${{ env.REPO_NAME }} -x "${{ env.REPO_NAME }}/.git*" -x "${{ env.REPO_NAME }}/.DS_Store"
+          mkdir -p ${{ env.MODULE_NAME }}
+          # Copy all files to the module-named directory
+          cp -r ${{ env.REPO_NAME }}/* ${{ env.MODULE_NAME }}/
+          # Create the ZIP file with the module name as the folder
+          zip -r ${{ env.MODULE_NAME }}.zip ${{ env.MODULE_NAME }}
           # Move the ZIP back to the working directory
           mv ${{ env.MODULE_NAME }}.zip ${{ env.REPO_NAME }}/
+          # Clean up temporary directory
+          rm -rf ${{ env.MODULE_NAME }}
           cd ${{ env.REPO_NAME }}
           
       - name: Upload module package as artifact

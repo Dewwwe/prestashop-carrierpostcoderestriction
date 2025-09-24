@@ -36,7 +36,7 @@ class Carrierpostcoderestriction extends Module
     {
         $this->name = 'carrierpostcoderestriction';
         $this->tab = 'administration';
-        $this->version = '1.0.3';
+        $this->version = '1.0.4';
         $this->author = 'dewwwe';
         $this->need_instance = 0;
 

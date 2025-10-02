@@ -2,7 +2,7 @@
 <module>
     <name>carrierpostcoderestriction</name>
     <displayName><![CDATA[Carrier Postcode Restriction]]></displayName>
-    <version><![CDATA[1.0.3]]></version>
+    <version><![CDATA[1.0.5]]></version>
     <description><![CDATA[Restrict carrier options according to delivery address postcode]]></description>
     <author><![CDATA[dewwwe]]></author>
     <tab><![CDATA[administration]]></tab>

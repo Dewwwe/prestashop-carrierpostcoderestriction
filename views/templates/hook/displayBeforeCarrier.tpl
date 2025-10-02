@@ -46,4 +46,14 @@
             </div>
         {/if}
     </div>
+{else}
+    <div class="carrierpostcoderestriction-notice">
+        {if $deliveryLinkUrl && $deliveryLinkUrl != '#'}
+            <div class="carrierpostcoderestriction-links">
+                <p>{l s='We have multiple zones that we deliver : Zone North (around Secteur Soisy-sur-Seine) and Zone South (around Secteur Boissy-le-Cutté)' d='Modules.Carrierpostcoderestriction.Shop'}</p>
+                <a href="{$deliveryLinkUrl|escape:'html':'UTF-8'}" target="_blank"
+                    class="link-delivery-zones">{$deliveryLinkText|escape:'html':'UTF-8'}</a>
+            </div>
+        {/if}
+    </div>
 {/if}

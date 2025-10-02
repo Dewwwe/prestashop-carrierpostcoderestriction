@@ -186,7 +186,7 @@ class Carrierpostcoderestriction extends Module
                 . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name;
         }
 
-         $helper->token = Tools::getValue('token');
+        $helper->token = Tools::getValue('token');
 
         $helper->tpl_vars = array(
             'fields_value' => $this->getConfigFormValues(),
@@ -483,28 +483,24 @@ class Carrierpostcoderestriction extends Module
 
         $id_address_delivery = (int) $cart->id_address_delivery;
         $delivery_address_postcode = $this->getPostcodeByAddressId($id_address_delivery);
-        
+
         if (!$delivery_address_postcode) {
             return '';
         }
 
         // Check if postcode restrictions should apply
         $showMessage = $this->shouldShowPostcodeRestrictionMessage($delivery_address_postcode);
-        
-        if ($showMessage) {
-            $this->context->smarty->assign([
-                'showPostcodeRestrictionMessage' => true,
-                'postcode' => $delivery_address_postcode,
-                'deliveryLinkText' => Configuration::get('CARRIERPOSTCODERESTRICTION_DELIVERY_LINK_TEXT', 'Where do we deliver?'),
-                'deliveryLinkUrl' => Configuration::get('CARRIERPOSTCODERESTRICTION_DELIVERY_LINK_URL', '#'),
-                'contactLinkText' => Configuration::get('CARRIERPOSTCODERESTRICTION_CONTACT_LINK_TEXT', 'Call Yann to discuss'),
-                'contactLinkUrl' => Configuration::get('CARRIERPOSTCODERESTRICTION_CONTACT_LINK_URL', '#')
-            ]);
-            
-            return $this->display(__FILE__, 'displayBeforeCarrier.tpl');
-        }
-        
-        return '';
+
+        $this->context->smarty->assign([
+            'showPostcodeRestrictionMessage' => $showMessage,
+            'postcode' => $delivery_address_postcode,
+            'deliveryLinkText' => Configuration::get('CARRIERPOSTCODERESTRICTION_DELIVERY_LINK_TEXT', 'Where do we deliver?'),
+            'deliveryLinkUrl' => Configuration::get('CARRIERPOSTCODERESTRICTION_DELIVERY_LINK_URL', '#'),
+            'contactLinkText' => Configuration::get('CARRIERPOSTCODERESTRICTION_CONTACT_LINK_TEXT', 'Call Yann to discuss'),
+            'contactLinkUrl' => Configuration::get('CARRIERPOSTCODERESTRICTION_CONTACT_LINK_URL', '#')
+        ]);
+
+        return $this->display(__FILE__, 'displayBeforeCarrier.tpl');
     }
 
     // public function hookDisplayCarrierExtraContent()
@@ -529,7 +525,7 @@ class Carrierpostcoderestriction extends Module
                 // Loop through the carrier list in this option
                 foreach ($carrierOption['carrier_list'] as $carrierListId => $carrier) {
                     $carrier_id = (int) $carrier['instance']->id;
-                    
+
                     // Use the centralized method to check if carrier should be restricted
                     if ($this->isCarrierRestrictedByPostcode($carrier_id, $delivery_address_postcode, $carrierBypassValues)) {
                         $shouldRemove = true;
@@ -591,13 +587,13 @@ class Carrierpostcoderestriction extends Module
 
         // Check if the delivery address postcode starts with any of the allowed prefixes
         $allowedPostcodes = Configuration::get('CARRIERPOSTCODERESTRICTION_ALLOWED_POSTCODES');
-        
+
         if (empty($allowedPostcodes)) {
             return false; // No restrictions configured
         }
 
         $allowedPostcodesArray = array_map('trim', explode(',', $allowedPostcodes));
-        
+
         foreach ($allowedPostcodesArray as $prefix) {
             if (!empty($prefix) && strpos($postcode, $prefix) === 0) {
                 return false; // Postcode matches, carrier is not restricted
@@ -618,14 +614,14 @@ class Carrierpostcoderestriction extends Module
     {
         // First check if postcode restrictions are configured
         $allowedPostcodes = Configuration::get('CARRIERPOSTCODERESTRICTION_ALLOWED_POSTCODES');
-        
+
         if (empty($allowedPostcodes)) {
             return false; // No restrictions configured
         }
 
         // Check if postcode matches allowed prefixes
         $allowedPostcodesArray = array_map('trim', explode(',', $allowedPostcodes));
-        
+
         foreach ($allowedPostcodesArray as $prefix) {
             if (!empty($prefix) && strpos($postcode, $prefix) === 0) {
                 return false; // Postcode matches, no message needed

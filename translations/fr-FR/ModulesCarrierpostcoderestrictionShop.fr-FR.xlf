@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="admin-lpdy" source-language="fr-FR" target-language="fr-FR" datatype="plaintext">
+    <body>
+      <trans-unit id="036f08b4ef89234ce857656549355f15">
+        <source>Unfortunately, we do not deliver to your address yet!</source>
+        <target>Malheureusement, nous ne livrons pas encore à votre adresse !</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="474fee2c3f3274d673f9697f60874c52">
+        <source>Your area (%s) is not yet included in our current delivery route! However, you can always come and collect your basket at one of our collection points.</source>
+        <target>Votre commune (%s) n'est pas encore incluse dans notre tournée actuelle ! Cependant, vous pouvez toujours venir récupérer votre panier à l’un nos points de collecte.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b076a2616d2b9894cc16aef306f1d13e">
+        <source>To see the areas we currently deliver to</source>
+        <target>Pour voir les communes que nous livrons en ce moment</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5d5c5fd75187dae7d797331dd30c897e">
+        <source>Do you think this is an error?</source>
+        <target>Vous pensez que c’est un erreur ?</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f3f42a291cb316b47d8a44e7eab5ec9d">
+        <source>We have multiple zones that we deliver : Zone North (around Secteur Soisy-sur-Seine) and Zone South (around Secteur Boissy-le-Cutté)</source>
+        <target>Nous livrons dans plusieurs zones : Zone Nord (secteur Soisy-sur-Seine), et Zone Sud (secteur Boissy-le-Cutté)</target>
+        <note>Line: </note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
